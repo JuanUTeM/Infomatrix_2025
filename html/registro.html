@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro</title>
+    <link rel="stylesheet" href="../frontend\css/registro.css">
+</head>
+<body>
+    <div class="registro-container">
+        <h2>Registro</h2>
+        <form id="formulario-registro">
+            <label for="nombres-registro">Nombres:</label>
+            <input type="text" id="nombres-registro" required>
+            <label for="apellidos-registro">Apellidos:</label>
+            <input type="text" id="apellidos-registro" required>
+            <label for="usuario-registro">Usuario:</label>
+            <input type="text" id="usuario-registro" required>
+            <label for="contraseña-registro">Contraseña:</label>
+            <input type="password" id="contraseña-registro" required>
+            <button type="submit">Registrarse</button>
+        </form>
+        <p>¿Ya tienes una cuenta? <a href="../html/login.html">Inicia Sesión</a></p>
+    </div>
+
+    <script src="../js/registro.js"></script>
+</body>
+</html>

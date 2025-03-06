@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapeo del Patio de Contenedores</title>
+    <link rel="stylesheet" href="../frontend\css/styles.css">
+</head>
+<body>
+    <h1>Mapeo del Patio de Contenedores</h1>
+
+    <!-- Controles -->
+    <div class="controls">
+        <select id="filtrar">
+            <option value="todos">Todos</option>
+            <option value="normal">Normal</option>
+            <option value="peligroso">Peligroso</option>
+            <option value="refrigerado">Refrigerado</option>
+            <option value="vacío">Vacío</option>
+        </select>
+        <input type="text" id="buscar" placeholder="Buscar por código">
+        <button id="generar-reporte">Generar Reporte</button>
+        <button id="abrir-formulario">Agregar Espacio</button>
+        <button id="ir-login">Ir al Login</button>
+    </div>
+
+    <!-- Cuadrícula del Patio -->
+    <div class="patio-grid">
+        <!-- Sección Normal -->
+        <div class="seccion">
+            <h3>Normal</h3>
+            <div class="bloques" id="normal"></div>
+        </div>
+
+        <!-- Sección Peligrosos -->
+        <div class="seccion">
+            <h3>Peligrosos</h3>
+            <div class="bloques" id="peligroso"></div>
+        </div>
+
+        <!-- Sección Refrigerados -->
+        <div class="seccion">
+            <h3>Refrigerados</h3>
+            <div class="bloques" id="refrigerado"></div>
+        </div>
+
+        <!-- Sección Vacíos -->
+        <div class="seccion">
+            <h3>Vacíos</h3>
+            <div class="bloques" id="vacío"></div>
+        </div>
+    </div>
+
+    <!-- Modales -->
+    <div id="modal-agregar" class="modal">
+        <div class="modal-contenido">
+            <span class="cerrar-modal">&times;</span>
+            <h2>Agregar Nuevo Contenedor</h2>
+            <form id="formulario-agregar">
+                <label for="codigo">Código del Espacio:</label>
+                <input type="text" id="codigo" placeholder="Ej: N1-01" required>
+                <label for="numero-contenedor">Número de Contenedor:</label>
+                <input type="text" id="numero-contenedor" placeholder="Ej: CNTR123456" required>
+                <label for="tipo-contenedor">Tipo de Contenedor:</label>
+                <select id="tipo-contenedor" required>
+                    <option value="normal">Normal</option>
+                    <option value="peligroso">Peligroso</option>
+                    <option value="refrigerado">Refrigerado</option>
+                    <option value="vacío">Vacío</option>
+                </select>
+                <label for="tamano-contenedor">Tamaño del Contenedor:</label>
+                <input type="text" id="tamano-contenedor" placeholder="Ej: 20 pies" required>
+                <label for="peso">Peso (kg):</label>
+                <input type="number" id="peso" placeholder="Ej: 1000" required>
+                <label for="descripcion-mercancia">Descripción de la Mercancía:</label>
+                <textarea id="descripcion-mercancia" placeholder="Descripción de la mercancía" required></textarea>
+                <button type="submit">Agregar Contenedor</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para mostrar información del contenedor -->
+    <div id="modal-info" class="modal">
+        <div class="modal-contenido">
+            <span class="cerrar-modal">&times;</span>
+            <h2>Información del Contenedor</h2>
+            <div id="info-contenedor">
+                <!-- Aquí se mostrará la información del contenedor -->
+            </div>
+            <!-- Botones para liberar y editar -->
+            <div class="botones-accion">
+                <button id="liberar-espacio" class="btn-liberar">Liberar Espacio</button>
+                <button id="editar-contenedor" class="btn-editar">Editar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar contenedor -->
+    <div id="modal-editar" class="modal">
+        <div class="modal-contenido">
+            <span class="cerrar-modal">&times;</span>
+            <h2>Editar Contenedor</h2>
+            <form id="formulario-editar">
+                <input type="hidden" id="codigo-editar">
+                <label for="numero-contenedor-editar">Número de Contenedor:</label>
+                <input type="text" id="numero-contenedor-editar" required>
+                <label for="tipo-contenedor-editar">Tipo de Contenedor:</label>
+                <select id="tipo-contenedor-editar" required>
+                    <option value="normal">Normal</option>
+                    <option value="peligroso">Peligroso</option>
+                    <option value="refrigerado">Refrigerado</option>
+                    <option value="vacío">Vacío</option>
+                </select>
+                <label for="tamano-contenedor-editar">Tamaño del Contenedor:</label>
+                <input type="text" id="tamano-contenedor-editar" required>
+                <label for="peso-editar">Peso (kg):</label>
+                <input type="number" id="peso-editar" required>
+                <label for="descripcion-mercancia-editar">Descripción de la Mercancía:</label>
+                <textarea id="descripcion-mercancia-editar" required></textarea>
+                <button type="submit">Guardar Cambios</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="../frontend/css/dashboard.css">
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="header">
+        <h1>Bienvenido al Dashboard</h1>
+        <p>Aquí puedes administrar los contenedores y usuarios.</p>
+    </div>
+
+    <!-- Controles -->
+    <div class="controls">
+        <input type="text" id="buscar-contenedor" placeholder="Buscar por código o número">
+        <select id="filtrar-tipo">
+            <option value="todos">Todos</option>
+            <option value="normal">Normal</option>
+            <option value="peligroso">Peligroso</option>
+            <option value="refrigerado">Refrigerado</option>
+            <option value="vacío">Vacío</option>
+        </select>
+        <button id="exportar-excel">Exportar a Excel</button>
+    </div>
+
+    <!-- Tabla para mostrar los contenedores -->
+    <table id="tabla-contenedores">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Número de Contenedor</th>
+                <th>Tipo</th>
+                <th>Tamaño</th>
+                <th>Peso (kg)</th>
+                <th>Descripción</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Aquí se cargarán los contenedores dinámicamente -->
+        </tbody>
+    </table>
+
+    <!-- Paginación -->
+    <div class="paginacion">
+        <button id="anterior-pagina">Anterior</button>
+        <span id="numero-pagina">Página 1</span>
+        <button id="siguiente-pagina">Siguiente</button>
+    </div>
+
+    <!-- Gráficas -->
+    <div class="graficas">
+        <div id="grafica-tipos" class="grafica"></div>
+        <div id="grafica-pesos" class="grafica"></div>
+    </div>
+
+    <!-- Botón para cerrar sesión -->
+    <button id="cerrar-sesion">Cerrar Sesión</button>
+
+    <script src="../js/dashboard.js"></script>
+</body>
+</html>
