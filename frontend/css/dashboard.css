@@ -3,8 +3,9 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background: url('../css/imagenes/FONDO.jpg') no-repeat center center fixed;
+    background: url('../imagenes/FONDO.jpg') no-repeat center center fixed;
     background-size: cover;
+    color: #251B0E; /* Negro marrón (900) para texto principal */
     animation: fadeIn 1s ease-in-out;
 }
 
@@ -16,15 +17,18 @@ body {
 .header {
     text-align: center;
     margin-bottom: 20px;
+    background-color: #F8F3EC; /* Blanco crema (50) */
+    padding: 15px;
+    border-radius: 10px;
 }
 
 .header h1 {
-    color: #2c3e50;
+    color: #BA9D45; /* Marrón dorado (400) */
     margin-bottom: 10px;
 }
 
 .header p {
-    color: #34495e;
+    color: #705229; /* Marrón profundo (700) */
 }
 
 /* Controles */
@@ -40,21 +44,21 @@ body {
     padding: 10px;
     border: none;
     border-radius: 5px;
-    background-color: #3498db;
-    color: white;
+    background-color: #D6B88F; /* Marrón claro (300) */
+    color: #F8F3EC; /* Blanco crema (50) */
     cursor: pointer;
     font-size: 14px;
     transition: background-color 0.3s ease;
 }
 
 .controls button:hover {
-    background-color: #2980b9;
+    background-color: #CBA16A; /* Marrón dorado (400) */
 }
 
 .controls select, .controls input {
-    background-color: white;
-    color: #333;
-    border: 1px solid #ccc;
+    background-color: #F1E8DA; /* Beige claro (100) */
+    color: #251B0E; /* Negro marrón (900) */
+    border: 1px solid #E3D0B5; /* Beige medio (200) */
 }
 
 /* Tabla de contenedores */
@@ -63,10 +67,10 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     border-collapse: collapse;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: #F8F3EC; /* Blanco crema (50) */
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 15px rgba(37, 27, 14, 0.2); /* Negro marrón (900) con opacidad */
     animation: slideIn 0.5s ease-in-out;
 }
 
@@ -75,19 +79,21 @@ body {
     to { transform: translateY(0); opacity: 1; }
 }
 
-#tabla-contenedores th, #tabla-contenedores td {
+#tabla-contenedores th {
+    background-color: #BA9D45; /* Marrón dorado (400) */
+    color: #F8F3EC; /* Blanco crema (50) */
     padding: 12px;
     text-align: left;
-    border-bottom: 1px solid #ddd;
 }
 
-#tabla-contenedores th {
-    background-color: #3498db;
-    color: white;
+#tabla-contenedores td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #E3D0B5; /* Beige medio (200) */
 }
 
 #tabla-contenedores tr:hover {
-    background-color: #f1f1f1;
+    background-color: #F1E8DA; /* Beige claro (100) */
 }
 
 /* Paginación */
@@ -100,21 +106,21 @@ body {
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
-    background-color: #3498db;
-    color: white;
+    background-color: #D6B88F; /* Marrón claro (300) */
+    color: #F8F3EC; /* Blanco crema (50) */
     cursor: pointer;
     font-size: 14px;
     transition: background-color 0.3s ease;
 }
 
 .paginacion button:hover {
-    background-color: #2980b9;
+    background-color: #CBA16A; /* Marrón dorado (400) */
 }
 
 .paginacion span {
     margin: 0 10px;
     font-size: 16px;
-    color: #34495e;
+    color: #705229; /* Marrón profundo (700) */
 }
 
 /* Gráficas */
@@ -122,15 +128,31 @@ body {
     display: flex;
     justify-content: space-around;
     margin: 20px 0;
+    flex-wrap: wrap; /* Responsivo para pantallas pequeñas */
 }
 
 .grafica {
     width: 45%;
     height: 400px;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: #F1E8DA; /* Beige claro (100) */
     border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 15px rgba(37, 27, 14, 0.2); /* Negro marrón (900) con opacidad */
     padding: 20px;
+    margin-bottom: 20px; /* Espacio entre gráficas en pantallas pequeñas */
+}
+
+@media (max-width: 768px) {
+    .grafica {
+        width: 100%; /* Gráficas ocupan todo el ancho en pantallas pequeñas */
+    }
+    #tabla-contenedores {
+        width: 100%; /* Tabla ocupa todo el ancho */
+        font-size: 14px; /* Reducir tamaño de fuente */
+    }
+    .controls {
+        flex-direction: column; /* Apilar controles verticalmente */
+        align-items: center;
+    }
 }
 
 /* Botón de cerrar sesión */
@@ -139,8 +161,8 @@ body {
     top: 20px;
     right: 20px;
     padding: 10px 20px;
-    background-color: #e74c3c;
-    color: white;
+    background-color: #956E37; /* Marrón terroso (600) */
+    color: #F8F3EC; /* Blanco crema (50) */
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -149,5 +171,5 @@ body {
 }
 
 #cerrar-sesion:hover {
-    background-color: #c0392b;
-} 
+    background-color: #705229; /* Marrón profundo (700) */
+}

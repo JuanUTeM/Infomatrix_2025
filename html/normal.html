@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Zona Normal</title>
+  <link rel="stylesheet" href="../frontend/css/styles.css" />
+  <style>
+    .layout-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 2px;
+      max-width: 1000px;
+      margin: 30px auto;
+      background-color: #f1e8da;
+      padding: 15px;
+      border-radius: 5px;
+    }
+    .layout-cell {
+      border: 1px solid #e3d0b5;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      cursor: pointer;
+    }
+    .layout-row-label, .layout-col-label {
+      background-color: #f8f3ec;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .button-container {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .action-button {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 6px;
+      background-color: #ba9d45;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .action-button:hover {
+      background-color: #956e37;
+    }
+    .navbar-link {
+      background-color: #705229;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 5px;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+    }
+    .navbar-link:hover {
+      background-color: #4b371c;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-color: rgba(37, 27, 14, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background-color: #f8f3ec;
+      padding: 30px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      font-family: 'Arial', sans-serif;
+      color: #251b0e;
+      position: relative;
+    }
+    .modal-content h2 {
+      text-align: center;
+      color: #ba9d45;
+      margin-bottom: 20px;
+    }
+    .modal-content input,
+    .modal-content select,
+    .modal-content textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      border: 1px solid #d6b88f;
+      background-color: #fff;
+      font-size: 15px;
+    }
+    .modal-content label {
+      display: block;
+      font-weight: bold;
+      margin: 10px 0 5px;
+      color: #705229;
+    }
+    .guardar-btn {
+      width: 100%;
+      padding: 12px;
+      background-color: #ba9d45;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .guardar-btn:hover {
+      background-color: #956e37;
+    }
+    .close-icon {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 20px;
+      cursor: pointer;
+      color: #705229;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <h1 class="navbar-title">Zona Normal</h1>
+      <div class="navbar-controls">
+        <a href="mapeo_patio.html" class="navbar-link">Volver</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="layout-grid" id="layoutGrid"></div>
+
+  <div class="button-container">
+    <button class="action-button" id="agregarColumna">Agregar Columna</button>
+    <button class="action-button" id="abrir-formulario">Agregar Contenedor</button>
+  </div>
+
+  <!-- Modal Agregar -->
+  <div class="modal" id="modal-agregar">
+    <div class="modal-content">
+      <span class="close-icon cerrar-modal" id="close-agregar">&times;</span>
+      <h2 id="modal-titulo">Agregar Contenedor</h2>
+      <form id="formulario-agregar">
+        <input type="text" id="numero-contenedor" placeholder="Número de Contenedor" />
+        <input type="text" id="tamano-contenedor" placeholder="Tamaño" />
+        <input type="text" id="peso" placeholder="Peso" />
+        <textarea id="descripcion-mercancia" placeholder="Descripción"></textarea>
+        <label for="fecha-llegada">Fecha de Llegada</label>
+        <input type="date" id="fecha-llegada" />
+        <label for="fecha-salida">Fecha de Salida</label>
+        <input type="date" id="fecha-salida" />
+        <button type="button" id="guardar-contenedor" class="guardar-btn">Guardar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Información -->
+  <div class="modal" id="modal-info">
+    <div class="modal-content">
+      <span class="close-icon cerrar-modal" id="close-info">&times;</span>
+      <h2>Información del Contenedor</h2>
+      <div id="info-contenedor"></div>
+      <div style="display:flex; gap:10px; margin-top:15px;">
+        <button class="guardar-btn" id="editar-btn">📝 Editar</button>
+        <button class="guardar-btn" id="eliminar-btn" style="background:#b93131;">🗑️ Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/script.js"></script>
+</body>
+</html>

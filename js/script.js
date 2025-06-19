@@ -1,296 +1,183 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const modalAgregar = document.getElementById("modal-agregar");
-    const modalInfo = document.getElementById("modal-info");
-    const modalEditar = document.getElementById("modal-editar");
-    const abrirModalBtn = document.getElementById("abrir-formulario");
-    const cerrarModalBtns = document.querySelectorAll(".cerrar-modal");
-    const formularioAgregar = document.getElementById("formulario-agregar");
-    const formularioEditar = document.getElementById("formulario-editar");
-    const infoContenedor = document.getElementById("info-contenedor");
-    let bloqueSeleccionado = null;
+document.addEventListener("DOMContentLoaded", async () => {
+  const modalAgregar = document.getElementById("modal-agregar");
+  const modalInfo = document.getElementById("modal-info");
+  const abrirModalBtn = document.getElementById("abrir-formulario");
+  const layoutGrid = document.getElementById("layoutGrid");
+  const columnas = ["A","B","C","D","E","F","G"];
+  let contenedorActual = null;
 
-    // Cargar contenedores al iniciar la página
-    cargarContenedores();
+  function generarLayout() {
+    layoutGrid.innerHTML = "";
+    layoutGrid.style.gridTemplateColumns = `repeat(${columnas.length+1}, 1fr)`;
+    layoutGrid.appendChild(document.createElement("div")); // esquina
 
-    // Abrir modal de agregar
-    abrirModalBtn.addEventListener("click", function () {
-        modalAgregar.style.display = "flex";
+    columnas.forEach((letra, i) => {
+      const header = document.createElement("div");
+      header.className = "layout-col-label";
+      header.textContent = letra;
+      header.style.gridColumn = i + 2;
+      layoutGrid.appendChild(header);
     });
 
-    // Cerrar modales
-    cerrarModalBtns.forEach((btn) => {
-        btn.addEventListener("click", function () {
-            modalAgregar.style.display = "none";
-            modalInfo.style.display = "none";
-            modalEditar.style.display = "none";
-        });
-    });
+    for (let fila = 7; fila >= 1; fila--) {
+      const rowLabel = document.createElement("div");
+      rowLabel.className = "layout-row-label";
+      rowLabel.textContent = `${String(fila).padStart(2, "0")}-`;
+      layoutGrid.appendChild(rowLabel);
 
-    // Cerrar modales al hacer clic fuera del contenido
-    window.addEventListener("click", function (e) {
-        if (e.target === modalAgregar || e.target === modalInfo || e.target === modalEditar) {
-            modalAgregar.style.display = "none";
-            modalInfo.style.display = "none";
-            modalEditar.style.display = "none";
-        }
-    });
+      for (let col of columnas) {
+        const cell = document.createElement("div");
+        cell.className = "layout-cell";
+        cell.setAttribute("data-codigo", `${col}${String(fila).padStart(2,"0")}`);
+        layoutGrid.appendChild(cell);
+      }
+    }
+  }
 
-    // Agregar nuevo contenedor
-    formularioAgregar.addEventListener("submit", function (e) {
-        e.preventDefault();
+  abrirModalBtn.addEventListener("click", () => {
+    contenedorActual = null;
+    document.getElementById("formulario-agregar").reset();
+    modalAgregar.style.display = "flex";
+  });
 
-        const codigo = document.getElementById("codigo").value.trim();
-        const numeroContenedor = document.getElementById("numero-contenedor").value.trim();
-        const tipoContenedor = document.getElementById("tipo-contenedor").value;
-        const tamanoContenedor = document.getElementById("tamano-contenedor").value.trim();
-        const peso = document.getElementById("peso").value.trim();
-        const descripcionMercancia = document.getElementById("descripcion-mercancia").value.trim();
+  window.addEventListener("click", (e) => {
+    if (e.target === modalAgregar) modalAgregar.style.display = "none";
+    if (e.target === modalInfo) modalInfo.style.display = "none";
+  });
 
-        if (!codigo || !numeroContenedor || !tipoContenedor || !tamanoContenedor || !peso || !descripcionMercancia) {
-            alert("Por favor, completa todos los campos.");
-            return;
-        }
+  document.getElementById("close-agregar").addEventListener("click", () => modalAgregar.style.display = "none");
+  document.getElementById("close-info").addEventListener("click", () => modalInfo.style.display = "none");
 
-        // Enviar datos al backend
-        fetch("http://localhost:3000/api/espacios", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                codigo,
-                numero_contenedor: numeroContenedor,
-                tipo_contenedor: tipoContenedor,
-                tamano_contenedor: tamanoContenedor,
-                peso,
-                descripcion_mercancia: descripcionMercancia,
-            }),
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    // Recargar los contenedores después de agregar uno nuevo
-                    cargarContenedores();
-                    // Limpiar el formulario y cerrar el modal
-                    formularioAgregar.reset();
-                    modalAgregar.style.display = "none";
-                }
-            })
-            .catch((error) => {
-                console.error("Error al enviar los datos:", error);
-                alert("Hubo un error al agregar el espacio.");
-            });
-    });
+  document.getElementById("guardar-contenedor").addEventListener("click", async () => {
+    const numero = document.getElementById("numero-contenedor").value.trim();
+    const tamano = document.getElementById("tamano-contenedor").value.trim();
+    const peso = document.getElementById("peso").value.trim();
+    const descripcion = document.getElementById("descripcion-mercancia").value.trim();
+    const llegada = document.getElementById("fecha-llegada").value;
+    const salida = document.getElementById("fecha-salida").value;
+    const zona = obtenerZonaDesdeHTML();
 
-    // Función para cargar los contenedores desde la base de datos
-    function cargarContenedores() {
-        fetch("http://localhost:3000/api/espacios")
-            .then((response) => response.json())
-            .then((data) => {
-                if (data.error) {
-                    console.error("Error al cargar los contenedores:", data.error);
-                } else {
-                    // Limpiar las secciones antes de cargar los contenedores
-                    document.querySelectorAll(".bloques").forEach((seccion) => {
-                        seccion.innerHTML = "";
-                    });
-
-                    // Mostrar los contenedores en sus secciones correspondientes
-                    data.forEach((contenedor) => {
-                        const seccion = document.getElementById(contenedor.tipo_contenedor);
-                        if (seccion) {
-                            const nuevoBloque = document.createElement("div");
-                            nuevoBloque.classList.add("bloque");
-                            nuevoBloque.dataset.codigo = contenedor.codigo;
-                            nuevoBloque.dataset.numero = contenedor.numero_contenedor;
-                            nuevoBloque.dataset.tipo = contenedor.tipo_contenedor;
-                            nuevoBloque.dataset.tamano = contenedor.tamano_contenedor;
-                            nuevoBloque.dataset.peso = contenedor.peso;
-                            nuevoBloque.dataset.descripcion = contenedor.descripcion_mercancia;
-                            nuevoBloque.textContent = contenedor.codigo;
-
-                            // Aplicar color según el tipo
-                            switch (contenedor.tipo_contenedor) {
-                                case "normal":
-                                    nuevoBloque.style.backgroundColor = "#2ecc71";
-                                    break;
-                                case "peligroso":
-                                    nuevoBloque.style.backgroundColor = "#e74c3c";
-                                    break;
-                                case "refrigerado":
-                                    nuevoBloque.style.backgroundColor = "#3498db";
-                                    break;
-                                case "vacío":
-                                    nuevoBloque.style.backgroundColor = "#95a5a6";
-                                    break;
-                            }
-
-                            // Agregar evento de clic para mostrar la información del contenedor
-                            nuevoBloque.addEventListener("click", function () {
-                                mostrarInformacionContenedor(contenedor);
-                                bloqueSeleccionado = nuevoBloque;
-                            });
-
-                            seccion.appendChild(nuevoBloque);
-                        }
-                    });
-                }
-            })
-            .catch((error) => {
-                console.error("Error al cargar los contenedores:", error);
-            });
+    if (!numero || !tamano || !peso || !descripcion || !llegada || !salida) {
+      return alert("Todos los campos son obligatorios.");
     }
 
-    // Función para mostrar la información del contenedor
-    function mostrarInformacionContenedor(contenedor) {
-        // Mostrar la información en el modal
-        infoContenedor.innerHTML = `
-            <p><strong>Código:</strong> ${contenedor.codigo}</p>
-            <p><strong>Número de Contenedor:</strong> ${contenedor.numero_contenedor}</p>
-            <p><strong>Tipo de Contenedor:</strong> ${contenedor.tipo_contenedor}</p>
-            <p><strong>Tamaño del Contenedor:</strong> ${contenedor.tamano_contenedor}</p>
-            <p><strong>Peso:</strong> ${contenedor.peso} kg</p>
-            <p><strong>Descripción de la Mercancía:</strong> ${contenedor.descripcion_mercancia}</p>
-        `;
-
-        // Mostrar el modal de información
-        modalInfo.style.display = "flex";
+    if (contenedorActual) {
+      await fetch(`http://localhost:3000/api/contenedores/${contenedorActual.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ numero, tamano, peso, descripcion, fecha_llegada: llegada, fecha_salida: salida })
+      });
+      location.reload();
+      return;
     }
 
-    // Función para liberar un espacio (eliminar contenedor)
-    document.getElementById("liberar-espacio").addEventListener("click", function () {
-        const codigo = bloqueSeleccionado.dataset.codigo;
+    const codigo = await calcularCodigoDisponible(salida, zona);
+    if (!codigo) return alert("No hay espacio disponible.");
 
-        fetch(`http://localhost:3000/api/espacios/${codigo}`, {
-            method: "DELETE",
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    alert("Espacio liberado correctamente");
-                    cargarContenedores(); // Recargar los contenedores
-                    modalInfo.style.display = "none"; // Cerrar el modal
-                }
-            })
-            .catch((error) => {
-                console.error("Error al liberar el espacio:", error);
-                alert("Hubo un error al liberar el espacio");
-            });
+    const res = await fetch("http://localhost:3000/api/contenedores", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ codigo, numero, tipo: zona, tamano, peso, descripcion, fecha_llegada: llegada, fecha_salida: salida, zona, posicion: "pendiente" })
     });
+    if (res.ok) {
+      pintarCelda(codigo, zona, numero);
+      modalAgregar.style.display = "none";
+      document.getElementById("formulario-agregar").reset();
+    } else {
+      const err = await res.json();
+      alert(err.error || "Error al guardar");
+    }
+  });
 
-    // Función para editar un contenedor
-    document.getElementById("editar-contenedor").addEventListener("click", function () {
-        const contenedor = {
-            codigo: bloqueSeleccionado.dataset.codigo,
-            numero_contenedor: bloqueSeleccionado.dataset.numero,
-            tipo_contenedor: bloqueSeleccionado.dataset.tipo,
-            tamano_contenedor: bloqueSeleccionado.dataset.tamano,
-            peso: bloqueSeleccionado.dataset.peso,
-            descripcion_mercancia: bloqueSeleccionado.dataset.descripcion,
-        };
+  function obtenerZonaDesdeHTML() {
+    const url = location.pathname.toLowerCase();
+    return url.includes("normal") ? "Normal" :
+           url.includes("peligroso") ? "Peligroso" :
+           url.includes("refrigeracion") ? "Refrigerado" :
+           url.includes("vacio") ? "Vacío" : "Desconocido";
+  }
 
-        // Llenar el formulario de edición con los datos actuales
-        document.getElementById("codigo-editar").value = contenedor.codigo;
-        document.getElementById("numero-contenedor-editar").value = contenedor.numero_contenedor;
-        document.getElementById("tipo-contenedor-editar").value = contenedor.tipo_contenedor;
-        document.getElementById("tamano-contenedor-editar").value = contenedor.tamano_contenedor;
-        document.getElementById("peso-editar").value = contenedor.peso;
-        document.getElementById("descripcion-mercancia-editar").value = contenedor.descripcion_mercancia;
+  function pintarCelda(codigo, tipo, numero) {
+    const celda = document.querySelector(`.layout-cell[data-codigo="${codigo}"]`);
+    if (!celda) {
+      console.error("Celda no encontrada para:", codigo);
+      return;
+    }
 
-        // Mostrar el modal de edición
-        modalEditar.style.display = "flex";
-    });
+    const colores = {
+      normal: "#d4edda",
+      peligroso: "#f8d7da",
+      refrigerado: "#d1ecf1",
+      vacío: "#e2e3e5"
+    };
+    celda.style.backgroundColor = colores[tipo.toLowerCase()] || colores.normal;
+    celda.textContent = numero;
+    celda.onclick = () => mostrarInfo(codigo);
+  }
 
-    // Enviar datos editados al backend
-    formularioEditar.addEventListener("submit", function (e) {
-        e.preventDefault();
-
-        const codigo = document.getElementById("codigo-editar").value;
-        const numeroContenedor = document.getElementById("numero-contenedor-editar").value;
-        const tipoContenedor = document.getElementById("tipo-contenedor-editar").value;
-        const tamanoContenedor = document.getElementById("tamano-contenedor-editar").value;
-        const peso = document.getElementById("peso-editar").value;
-        const descripcionMercancia = document.getElementById("descripcion-mercancia-editar").value;
-
-        fetch(`http://localhost:3000/api/espacios/${codigo}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                numero_contenedor: numeroContenedor,
-                tipo_contenedor: tipoContenedor,
-                tamano_contenedor: tamanoContenedor,
-                peso: peso,
-                descripcion_mercancia: descripcionMercancia,
-            }),
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    alert("Contenedor actualizado correctamente");
-                    cargarContenedores(); // Recargar los contenedores
-                    modalEditar.style.display = "none"; // Cerrar el modal
-                }
-            })
-            .catch((error) => {
-                console.error("Error al editar el contenedor:", error);
-                alert("Hubo un error al editar el contenedor");
-            });
-    });
-
-    // Filtrar por tipo de contenedor
-    document.getElementById("filtrar").addEventListener("change", function () {
-        const tipoSeleccionado = this.value; // Obtener el valor seleccionado
-
-        // Ocultar todos los bloques
-        document.querySelectorAll(".bloque").forEach((bloque) => {
-            bloque.style.display = "none";
-        });
-
-        // Mostrar solo los bloques del tipo seleccionado
-        if (tipoSeleccionado === "todos") {
-            document.querySelectorAll(".bloque").forEach((bloque) => {
-                bloque.style.display = "block";
-            });
-        } else {
-            document.querySelectorAll(`.bloque[data-tipo="${tipoSeleccionado}"]`).forEach((bloque) => {
-                bloque.style.display = "block";
-            });
+  async function calcularCodigoDisponible(salida, zona) {
+    const res = await fetch("http://localhost:3000/api/contenedores");
+    const data = await res.json();
+    for (let f = 7; f >= 1; f--) {
+      for (let c of columnas) {
+        let cod = c + String(f).padStart(2, "0");
+        if (!data.find(x => x.codigo === cod && x.zona.toLowerCase() === zona.toLowerCase())) {
+          return cod;
         }
+      }
+    }
+    return null;
+  }
+
+  async function cargarContenedores() {
+    generarLayout();
+    const res = await fetch("http://localhost:3000/api/contenedores");
+    const data = await res.json();
+    data.forEach(c => {
+      if (c.zona.toLowerCase() === obtenerZonaDesdeHTML().toLowerCase()) {
+        pintarCelda(c.codigo, c.tipo, c.numero);
+      }
     });
+  }
 
-    // Buscar por código
-    document.getElementById("buscar").addEventListener("input", function () {
-        const codigoBusqueda = this.value.trim().toUpperCase(); // Obtener el código ingresado
+  async function mostrarInfo(codigo) {
+    const res = await fetch("http://localhost:3000/api/contenedores");
+    const data = await res.json();
+    const c = data.find(x => x.codigo === codigo);
+    if (!c) return alert("Contenedor no encontrado");
 
-        // Ocultar todos los bloques
-        document.querySelectorAll(".bloque").forEach((bloque) => {
-            bloque.style.display = "none";
-        });
+    contenedorActual = c;
+    document.getElementById("info-contenedor").innerHTML = `
+      <p><strong>Código:</strong> ${c.codigo}</p>
+      <p><strong>Número:</strong> ${c.numero}</p>
+      <p><strong>Z/T:</strong> ${c.tipo}</p>
+      <p><strong>Tamaño:</strong> ${c.tamano}</p>
+      <p><strong>Peso:</strong> ${c.peso}</p>
+      <p><strong>Desc:</strong> ${c.descripcion}</p>
+      <p><strong>Llegada:</strong> ${new Date(c.fecha_llegada).toLocaleDateString()}</p>
+      <p><strong>Salida:</strong> ${new Date(c.fecha_salida).toLocaleDateString()}</p>
+    `;
+    modalInfo.style.display = "flex";
+  }
 
-        // Mostrar solo los bloques que coincidan con el código
-        if (codigoBusqueda === "") {
-            document.querySelectorAll(".bloque").forEach((bloque) => {
-                bloque.style.display = "block";
-            });
-        } else {
-            document.querySelectorAll(".bloque").forEach((bloque) => {
-                if (bloque.dataset.codigo.toUpperCase().includes(codigoBusqueda)) {
-                    bloque.style.display = "block";
-                }
-            });
-        }
-    });
+  document.getElementById("editar-btn").addEventListener("click", () => {
+    if (!contenedorActual) return;
+    modalInfo.style.display = "none";
+    modalAgregar.style.display = "flex";
+    document.getElementById("numero-contenedor").value = contenedorActual.numero;
+    document.getElementById("tamano-contenedor").value = contenedorActual.tamano;
+    document.getElementById("peso").value = contenedorActual.peso;
+    document.getElementById("descripcion-mercancia").value = contenedorActual.descripcion;
+    document.getElementById("fecha-llegada").value = contenedorActual.fecha_llegada;
+    document.getElementById("fecha-salida").value = contenedorActual.fecha_salida;
+  });
 
-    // Botón para ir al login
-    document.getElementById("ir-login").addEventListener("click", function () {
-        window.location.href = "../html/login.html";
-    });
+  document.getElementById("eliminar-btn").addEventListener("click", async () => {
+    if (!contenedorActual) return;
+    if (!confirm("¿Eliminar este contenedor?")) return;
+    await fetch(`http://localhost:3000/api/contenedores/${contenedorActual.id}`, { method: "DELETE" });
+    location.reload();
+  });
+
+  await cargarContenedores();
 });

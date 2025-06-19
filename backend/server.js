@@ -4,7 +4,6 @@ const cors = require("cors");
 const mysql = require("mysql2");
 const bcrypt = require("bcryptjs");
 
-// Crear la conexión a la base de datos
 const connection = mysql.createConnection({
     host: "localhost",
     user: "root",
@@ -23,11 +22,10 @@ connection.connect((err) => {
 const app = express();
 const PORT = 3000;
 
-// Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-// Ruta para registrar un nuevo usuario
+// Registro de usuario
 app.post("/api/registro", async (req, res) => {
     const { nombres, apellidos, usuario, contraseña } = req.body;
 
@@ -36,22 +34,15 @@ app.post("/api/registro", async (req, res) => {
     }
 
     try {
-        // Verificar si el usuario ya existe
         const queryVerificar = "SELECT * FROM usuarios WHERE usuario = ?";
         connection.query(queryVerificar, [usuario], async (err, results) => {
-            if (err) {
-                console.error("Error al verificar el usuario:", err);
-                return res.status(500).json({ error: "Error en el servidor" });
-            }
+            if (err) return res.status(500).json({ error: "Error en el servidor" });
 
             if (results.length > 0) {
                 return res.status(400).json({ error: "El nombre de usuario ya existe" });
             }
 
-            // Hashear la contraseña
             const hashedPassword = await bcrypt.hash(contraseña, 10);
-
-            // Insertar el nuevo usuario
             const queryInsertar = `
                 INSERT INTO usuarios (nombres, apellidos, usuario, contraseña)
                 VALUES (?, ?, ?, ?)
@@ -60,22 +51,18 @@ app.post("/api/registro", async (req, res) => {
             connection.query(
                 queryInsertar,
                 [nombres, apellidos, usuario, hashedPassword],
-                (err, results) => {
-                    if (err) {
-                        console.error("Error al insertar en la base de datos:", err);
-                        return res.status(500).json({ error: "Error en el servidor" });
-                    }
+                (err) => {
+                    if (err) return res.status(500).json({ error: "Error en el servidor" });
                     res.status(201).json({ message: "Usuario registrado correctamente" });
                 }
             );
         });
     } catch (error) {
-        console.error("Error al hashear la contraseña:", error);
         res.status(500).json({ error: "Error en el servidor" });
     }
 });
 
-// Ruta para iniciar sesión
+// Login
 app.post("/api/login", async (req, res) => {
     const { usuario, contraseña } = req.body;
 
@@ -84,49 +71,37 @@ app.post("/api/login", async (req, res) => {
     }
 
     try {
-        // Buscar el usuario en la base de datos
         const query = "SELECT * FROM usuarios WHERE usuario = ?";
         connection.query(query, [usuario], async (err, results) => {
-            if (err) {
-                console.error("Error al buscar el usuario:", err);
-                return res.status(500).json({ error: "Error en el servidor" });
-            }
+            if (err) return res.status(500).json({ error: "Error en el servidor" });
 
             if (results.length === 0) {
                 return res.status(400).json({ error: "Usuario no encontrado" });
             }
 
             const user = results[0];
-
-            // Verificar la contraseña
             const passwordMatch = await bcrypt.compare(contraseña, user.contraseña);
             if (!passwordMatch) {
                 return res.status(400).json({ error: "Contraseña incorrecta" });
             }
 
-            // Si todo está bien, enviar una respuesta exitosa
             res.status(200).json({ message: "Login exitoso" });
         });
     } catch (error) {
-        console.error("Error al verificar la contraseña:", error);
         res.status(500).json({ error: "Error en el servidor" });
     }
 });
 
-// Ruta para obtener todos los espacios (contenedores)
+// Obtener espacios
 app.get("/api/espacios", (req, res) => {
     const query = "SELECT * FROM espacios";
-
     connection.query(query, (err, results) => {
-        if (err) {
-            console.error("Error al obtener los espacios:", err);
-            return res.status(500).json({ error: "Error en el servidor" });
-        }
+        if (err) return res.status(500).json({ error: "Error en el servidor" });
         res.status(200).json(results);
     });
 });
 
-// Ruta para agregar un nuevo espacio (contenedor)
+// Agregar espacio
 app.post("/api/espacios", (req, res) => {
     const { codigo, numero_contenedor, tipo_contenedor, tamano_contenedor, peso, descripcion_mercancia } = req.body;
 
@@ -134,19 +109,14 @@ app.post("/api/espacios", (req, res) => {
         return res.status(400).json({ error: "Todos los campos son obligatorios" });
     }
 
-    // Verificar si el número de contenedor ya existe
     const queryVerificar = "SELECT * FROM espacios WHERE numero_contenedor = ?";
     connection.query(queryVerificar, [numero_contenedor], (err, results) => {
-        if (err) {
-            console.error("Error al verificar el contenedor:", err);
-            return res.status(500).json({ error: "Error en el servidor" });
-        }
+        if (err) return res.status(500).json({ error: "Error en el servidor" });
 
         if (results.length > 0) {
             return res.status(400).json({ error: "El número de contenedor ya existe" });
         }
 
-        // Insertar el nuevo contenedor con estado "ocupado"
         const queryInsertar = `
             INSERT INTO espacios (codigo, numero_contenedor, tipo_contenedor, tamano_contenedor, peso, descripcion_mercancia, estado)
             VALUES (?, ?, ?, ?, ?, ?, 'ocupado')
@@ -156,31 +126,24 @@ app.post("/api/espacios", (req, res) => {
             queryInsertar,
             [codigo, numero_contenedor, tipo_contenedor, tamano_contenedor, peso, descripcion_mercancia],
             (err, results) => {
-                if (err) {
-                    console.error("Error al insertar en la base de datos:", err);
-                    return res.status(500).json({ error: "Error en el servidor" });
-                }
-                res.status(201).json({ message: "Espacio agregado y asignado correctamente", id: results.insertId });
+                if (err) return res.status(500).json({ error: "Error en el servidor" });
+                res.status(201).json({ message: "Espacio agregado correctamente", id: results.insertId });
             }
         );
     });
 });
 
-// Ruta para eliminar un espacio (contenedor)
+// Eliminar espacio
 app.delete("/api/espacios/:codigo", (req, res) => {
     const codigo = req.params.codigo;
-
     const query = "DELETE FROM espacios WHERE codigo = ?";
-    connection.query(query, [codigo], (err, results) => {
-        if (err) {
-            console.error("Error al liberar el espacio:", err);
-            return res.status(500).json({ error: "Error en el servidor" });
-        }
-        res.status(200).json({ message: "Espacio liberado correctamente" });
+    connection.query(query, [codigo], (err) => {
+        if (err) return res.status(500).json({ error: "Error en el servidor" });
+        res.status(200).json({ message: "Espacio eliminado correctamente" });
     });
 });
 
-// Ruta para editar un espacio (contenedor)
+// Editar espacio
 app.put("/api/espacios/:codigo", (req, res) => {
     const codigo = req.params.codigo;
     const { numero_contenedor, tipo_contenedor, tamano_contenedor, peso, descripcion_mercancia } = req.body;
@@ -194,17 +157,112 @@ app.put("/api/espacios/:codigo", (req, res) => {
     connection.query(
         query,
         [numero_contenedor, tipo_contenedor, tamano_contenedor, peso, descripcion_mercancia, codigo],
-        (err, results) => {
-            if (err) {
-                console.error("Error al editar el contenedor:", err);
-                return res.status(500).json({ error: "Error en el servidor" });
+        (err) => {
+            if (err) return res.status(500).json({ error: "Error en el servidor" });
+            res.status(200).json({ message: "Espacio actualizado correctamente" });
+        }
+    );
+});
+
+// Agregar contenedor
+app.post("/api/contenedores", (req, res) => {
+    const {
+        codigo,
+        numero,
+        tipo,
+        tamano,
+        peso,
+        descripcion,
+        fecha_llegada,
+        fecha_salida,
+        zona
+    } = req.body;
+
+    if (!codigo || !numero || !tipo || !tamano || !peso || !descripcion || !fecha_llegada || !fecha_salida || !zona) {
+        return res.status(400).json({ error: "Todos los campos son obligatorios" });
+    }
+
+    const queryVerificar = "SELECT * FROM contenedores WHERE numero = ?";
+    connection.query(queryVerificar, [numero], (err, results) => {
+        if (err) return res.status(500).json({ error: "Error en el servidor" });
+
+        if (results.length > 0) {
+            return res.status(400).json({ error: "El número de contenedor ya existe" });
+        }
+
+        const queryInsertar = `
+            INSERT INTO contenedores 
+            (codigo, numero, tipo, tamano, peso, descripcion, fecha_llegada, fecha_salida, zona, posicion)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        connection.query(
+            queryInsertar,
+            [codigo, numero, tipo, tamano, peso, descripcion, fecha_llegada, fecha_salida, zona, 'pendiente'],
+            (err, results) => {
+                if (err) {
+                    console.error("Error al insertar contenedor:", err);
+                    return res.status(500).json({ error: "Error al guardar el contenedor" });
+                }
+
+                res.status(201).json({ message: "Contenedor agregado correctamente", id: results.insertId });
             }
+        );
+    });
+});
+
+// Obtener todos los contenedores
+app.get("/api/contenedores", (req, res) => {
+    const query = "SELECT * FROM contenedores";
+    connection.query(query, (err, results) => {
+        if (err) {
+            console.error("Error al obtener contenedores:", err);
+            return res.status(500).json({ error: "Error al obtener contenedores" });
+        }
+        res.status(200).json(results);
+    });
+});
+
+// Eliminar contenedor por ID
+app.delete("/api/contenedores/:id", (req, res) => {
+    const id = req.params.id;
+    const query = "DELETE FROM contenedores WHERE id = ?";
+    connection.query(query, [id], (err, result) => {
+        if (err) return res.status(500).json({ error: "Error al eliminar el contenedor" });
+        if (result.affectedRows === 0) return res.status(404).json({ error: "Contenedor no encontrado" });
+        res.status(200).json({ message: "Contenedor eliminado correctamente" });
+    });
+});
+
+// Editar contenedor por ID
+app.put("/api/contenedores/:id", (req, res) => {
+    const id = req.params.id;
+    const {
+        numero,
+        tamano,
+        peso,
+        descripcion,
+        fecha_llegada,
+        fecha_salida
+    } = req.body;
+
+    const query = `
+        UPDATE contenedores
+        SET numero = ?, tamano = ?, peso = ?, descripcion = ?, fecha_llegada = ?, fecha_salida = ?
+        WHERE id = ?
+    `;
+
+    connection.query(
+        query,
+        [numero, tamano, peso, descripcion, fecha_llegada, fecha_salida, id],
+        (err, result) => {
+            if (err) return res.status(500).json({ error: "Error al editar el contenedor" });
+            if (result.affectedRows === 0) return res.status(404).json({ error: "Contenedor no encontrado" });
             res.status(200).json({ message: "Contenedor actualizado correctamente" });
         }
     );
 });
 
-// Iniciar el servidor
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
