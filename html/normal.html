@@ -52,6 +52,19 @@
     .action-button:hover {
       background-color: #956e37;
     }
+    .navbar {
+      background-color: #f5ebd9;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #c5b28f;
+    }
+    .navbar-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #a07e3d;
+    }
     .navbar-link {
       background-color: #705229;
       color: #fff;
@@ -131,12 +144,8 @@
 </head>
 <body>
   <nav class="navbar">
-    <div class="navbar-container">
-      <h1 class="navbar-title">Zona Normal</h1>
-      <div class="navbar-controls">
-        <a href="mapeo_patio.html" class="navbar-link">Volver</a>
-      </div>
-    </div>
+    <div class="navbar-title">Zona Normal</div>
+    <a href="mapeo_patio.html" class="navbar-link">Volver</a>
   </nav>
 
   <div class="layout-grid" id="layoutGrid"></div>
@@ -152,14 +161,14 @@
       <span class="close-icon cerrar-modal" id="close-agregar">&times;</span>
       <h2 id="modal-titulo">Agregar Contenedor</h2>
       <form id="formulario-agregar">
-        <input type="text" id="numero-contenedor" placeholder="Número de Contenedor" />
-        <input type="text" id="tamano-contenedor" placeholder="Tamaño" />
-        <input type="text" id="peso" placeholder="Peso" />
-        <textarea id="descripcion-mercancia" placeholder="Descripción"></textarea>
+        <input type="text" id="numero-contenedor" placeholder="Número de Contenedor" required />
+        <input type="text" id="tamano-contenedor" placeholder="Tamaño" required />
+        <input type="text" id="peso" placeholder="Peso" required />
+        <textarea id="descripcion-mercancia" placeholder="Descripción" required></textarea>
         <label for="fecha-llegada">Fecha de Llegada</label>
-        <input type="date" id="fecha-llegada" />
+        <input type="date" id="fecha-llegada" required />
         <label for="fecha-salida">Fecha de Salida</label>
-        <input type="date" id="fecha-salida" />
+        <input type="date" id="fecha-salida" required />
         <button type="button" id="guardar-contenedor" class="guardar-btn">Guardar</button>
       </form>
     </div>
