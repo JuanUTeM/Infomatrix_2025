@@ -22,9 +22,7 @@ document.getElementById('login-form').addEventListener('submit', async function 
 
     if (response.ok) {
       alert('Inicio de sesión exitoso');
-      // Guardar sesión (opcional)
       localStorage.setItem('usuario', usuario);
-      // Redirigir
       window.location.href = 'mapeo_patio.html';
     } else {
       alert(data.error || 'Usuario o contraseña incorrectos');

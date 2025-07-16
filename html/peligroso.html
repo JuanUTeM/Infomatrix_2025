@@ -4,42 +4,102 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Zona Peligrosa</title>
-  <link rel="stylesheet" href="../frontend/css/styles.css" />
   <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fdfaf5;
+    }
+
+    .navbar {
+      background-color: #f5ebd9;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #c5b28f;
+    }
+
+    .navbar-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #a07e3d;
+    }
+
+    .navbar-link {
+      background-color: #705229;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 5px;
+      text-decoration: none;
+    }
+
+    .leyenda-container {
+      max-width: 1200px;
+      margin: 30px auto 0;
+      font-size: 14px;
+    }
+
+    .leyenda-container strong {
+      display: block;
+      margin-bottom: 10px;
+      color: #705229;
+    }
+
+    .leyenda-colores {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .leyenda-colores div {
+      padding: 8px 12px;
+      border-radius: 6px;
+      color: #000;
+    }
+
     .layout-grid {
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
+      display: flex;
+      flex-direction: column;
       gap: 2px;
-      max-width: 1000px;
       margin: 30px auto;
       background-color: #f1e8da;
       padding: 15px;
       border-radius: 5px;
+      width: fit-content;
     }
+
+    .layout-row {
+      display: flex;
+    }
+
     .layout-cell {
+      width: 150px;
+      height: 100px;
       border: 1px solid #e3d0b5;
-      height: 70px;
       display: flex;
       align-items: center;
       justify-content: center;
+      text-align: center;
       background-color: #fff;
+      cursor: pointer;
+      flex-direction: column;
+      font-size: 14px;
+      line-height: 1.4;
     }
-    .layout-row-label {
-      grid-column: 1 / span 1;
-      background-color: #f8f3ec;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+
+    .layout-row-label,
     .layout-col-label {
-      grid-row: 1 / span 1;
+      width: 60px;
+      height: 100px;
       background-color: #f8f3ec;
       font-weight: bold;
       display: flex;
       align-items: center;
       justify-content: center;
+      border: 1px solid #e3d0b5;
     }
+
     .button-container {
       display: flex;
       gap: 10px;
@@ -47,8 +107,9 @@
       justify-content: center;
       flex-wrap: wrap;
     }
+
     .action-button {
-      padding: 12px 25px;
+      padding: 12px 20px;
       border: none;
       border-radius: 6px;
       background-color: #ba9d45;
@@ -57,46 +118,60 @@
       cursor: pointer;
       transition: background-color 0.3s;
     }
+
     .action-button:hover {
       background-color: #956e37;
     }
-    .navbar-link {
-      background-color: #705229;
-      color: #fff;
-      padding: 8px 16px;
-      border-radius: 5px;
-      text-decoration: none;
-      transition: background-color 0.3s ease;
-    }
-    .navbar-link:hover {
-      background-color: #4b371c;
-    }
+
     .modal {
       display: none;
       position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(37, 27, 14, 0.5);
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.5);
       justify-content: center;
       align-items: center;
       z-index: 1000;
     }
-    .modal-content {
-      background-color: #f8f3ec;
-      padding: 30px;
-      border-radius: 12px;
-      width: 90%;
+
+    .modal-contenido {
+      background-color: #f5ebd9;
+      padding: 25px;
+      border-radius: 10px;
       max-width: 500px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-      font-family: 'Arial', sans-serif;
-      color: #251b0e;
+      width: 90%;
+      font-family: Arial, sans-serif;
+      color: #000;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      position: relative;
     }
-    .modal-content h2 {
+
+    .modal-contenido h2 {
+      color: #a07e3d;
+      margin-top: 0;
       text-align: center;
-      color: #ba9d45;
-      margin-bottom: 20px;
     }
+
+    .modal-contenido button {
+      margin-right: 10px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .modal-contenido button:hover {
+      opacity: 0.9;
+    }
+
+    .modal-cerrar {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 22px;
+      cursor: pointer;
+      color: #705229;
+    }
+
     .modal-content input,
     .modal-content select,
     .modal-content textarea {
@@ -108,132 +183,72 @@
       background-color: #fff;
       font-size: 15px;
     }
-    .modal-content label {
-      display: block;
-      font-weight: bold;
-      margin: 10px 0 5px;
-      color: #705229;
-    }
-    .guardar-btn {
-      width: 100%;
-      padding: 12px;
-      background-color: #ba9d45;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    .guardar-btn:hover {
-      background-color: #956e37;
-    }
   </style>
 </head>
 <body>
+
+  <!-- Barra superior -->
   <nav class="navbar">
-    <div class="navbar-container">
-      <h1 class="navbar-title">Zona Peligrosa</h1>
-      <div class="navbar-controls">
-        <a href="./mapeo_patio.html" class="navbar-link">Volver</a>
-      </div>
-    </div>
+    <div class="navbar-title">Zona Peligrosa</div>
+    <a href="mapeo_patio.html" class="navbar-link">Volver</a>
   </nav>
 
-  <div class="layout-grid" id="layoutGrid">
-    <div class="layout-row-label"></div>
-    <div class="layout-col-label" style="grid-column: 2;">A</div>
-    <div class="layout-col-label" style="grid-column: 3;">B</div>
-    <div class="layout-col-label" style="grid-column: 4;">C</div>
-    <div class="layout-col-label" style="grid-column: 5;">D</div>
-    <div class="layout-col-label" style="grid-column: 6;">E</div>
-    <div class="layout-col-label" style="grid-column: 7;">F</div>
-    <div class="layout-col-label" style="grid-column: 8;">G</div>
-    <div class="layout-row-label">07-</div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div>
-    <div class="layout-row-label">06-</div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div>
-    <div class="layout-row-label">05-</div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div>
-    <div class="layout-row-label">04-</div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div>
-    <div class="layout-row-label">03-</div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div>
-    <div class="layout-row-label">02-</div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div>
-    <div class="layout-row-label">01-</div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div>
-  </div>
-
-  <div class="button-container">
-    <button class="action-button" id="agregarColumna">Agregar Columna</button>
-    <button class="action-button" id="abrir-formulario">Agregar Contenedor</button>
-  </div>
-
-  <div class="modal" id="modal-agregar">
-    <div class="modal-content">
-      <h2>Agregar Contenedor</h2>
-      <input type="text" id="codigo" placeholder="Código" />
-      <input type="text" id="numero-contenedor" placeholder="Número de Contenedor" />
-      <select id="tipo-contenedor">
-        <option value="Normal">Normal</option>
-        <option value="Peligroso">Peligroso</option>
-        <option value="Refrigerado">Refrigerado</option>
-        <option value="Vacío">Vacío</option>
-      </select>
-      <input type="text" id="tamano-contenedor" placeholder="Tamaño" />
-      <input type="text" id="peso" placeholder="Peso" />
-      <textarea id="descripcion-mercancia" placeholder="Descripción de la Mercancía"></textarea>
-      <label for="fecha-llegada">Fecha de Llegada</label>
-      <input type="date" id="fecha-llegada" />
-      <label for="fecha-salida">Fecha de Salida</label>
-      <input type="date" id="fecha-salida" />
-      <button id="guardar-contenedor" class="guardar-btn">Guardar</button>
+  <!-- Leyenda visual -->
+  <div class="leyenda-container">
+    <strong>Leyenda de colores:</strong>
+    <div class="leyenda-colores">
+      <div style="background:#cce5ff;">📅 Salida hoy</div>
+      <div style="background:#ffe5b4;">📅 Salida mañana</div>
+      <div style="background:#f8d7da;">Peligroso</div>
     </div>
   </div>
 
-  <script>
-    const abrirFormulario = document.getElementById('abrir-formulario');
-    const modal = document.getElementById('modal-agregar');
+  <!-- Malla de layout -->
+  <div class="layout-grid" id="layoutGrid"></div>
 
-    abrirFormulario.addEventListener('click', () => {
-      modal.style.display = 'flex';
-    });
+  <!-- Botones para paginar y agregar -->
+  <div class="button-container">
+    <button class="action-button" id="prev-page">⏮ Página Anterior</button>
+    <button class="action-button" id="abrir-formulario">Agregar Contenedor</button>
+    <button class="action-button" id="next-page">Siguiente Página ⏭</button>
+  </div>
 
-    window.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.style.display = 'none';
-      }
-    });
+  <!-- Modal Agregar -->
+  <div class="modal" id="modal-agregar">
+    <div class="modal-contenido">
+      <span class="modal-cerrar" id="close-agregar" onclick="document.getElementById('modal-agregar').style.display='none'">&times;</span>
+      <h2 id="modal-titulo">Agregar Contenedor</h2>
+      <form id="formulario-agregar" class="modal-content">
+        <input type="text" id="numero-contenedor" placeholder="Número de Contenedor" required />
+        <input type="text" id="tamano-contenedor" placeholder="Tamaño (20 o 40)" required />
+        <input type="text" id="peso" placeholder="Peso" required />
+        <textarea id="descripcion-mercancia" placeholder="Descripción" required></textarea>
 
-    const layoutGrid = document.getElementById('layoutGrid');
-    const agregarColumnaBtn = document.getElementById('agregarColumna');
-    const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    let columnas = ['A','B','C','D','E','F','G'];
+        <label for="fecha-llegada">Fecha de Llegada</label>
+        <input type="date" id="fecha-llegada" readonly required />
 
-    agregarColumnaBtn.addEventListener('click', () => {
-      if (columnas.length >= letras.length) {
-        alert('Límite de columnas alcanzado');
-        return;
-      }
+        <label for="fecha-salida">Fecha de Salida</label>
+        <input type="date" id="fecha-salida" required />
 
-      const nuevaLetra = letras[columnas.length];
-      columnas.push(nuevaLetra);
+        <label for="grupo">Seleccionar tabla (grupo):</label>
+        <select id="grupo" required>
+          <option value="1">Tabla 1 (A, B, C...)</option>
+          <option value="2">Tabla 2 (A2, B2, C2...)</option>
+          <option value="3">Tabla 3 (A3, B3, C3...)</option>
+        </select>
 
-      layoutGrid.style.gridTemplateColumns = `repeat(${columnas.length + 1}, 1fr)`;
+        <div style="text-align: center; margin-top: 10px;">
+          <button type="button" id="guardar-contenedor" class="guardar-btn" style="background-color: #ba9d45; color: white;">💾 Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-      const nuevaEtiqueta = document.createElement('div');
-      nuevaEtiqueta.className = 'layout-col-label';
-      nuevaEtiqueta.textContent = nuevaLetra;
-      nuevaEtiqueta.style.gridColumn = columnas.length + 1;
-      nuevaEtiqueta.style.gridRow = 1;
-      layoutGrid.appendChild(nuevaEtiqueta);
+  <!-- Modal Información -->
+  <div class="modal" id="modal-info"></div>
 
-      const filas = layoutGrid.querySelectorAll('.layout-row-label');
-      filas.forEach((_, index) => {
-        if (index > 0) {
-          const nuevaCelda = document.createElement('div');
-          nuevaCelda.className = 'layout-cell';
-          nuevaCelda.textContent = '';
-          nuevaCelda.style.gridRow = index + 1;
-          nuevaCelda.style.gridColumn = columnas.length + 1;
-          layoutGrid.appendChild(nuevaCelda);
-        }
-      });
-    });
-  </script>
+  <!-- Script principal -->
+  <script src="../js/script.js"></script>
+  <br><br>
 </body>
 </html>

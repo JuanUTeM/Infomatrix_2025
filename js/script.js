@@ -1,211 +1,245 @@
-document.addEventListener("DOMContentLoaded", async function () {
-  const modalAgregar = document.getElementById("modal-agregar");
-  const modalInfo = document.getElementById("modal-info");
-  const abrirModalBtn = document.getElementById("abrir-formulario");
-  const layoutGrid = document.getElementById("layoutGrid");
-  const letras = "ABCDEFG".split("");
-  const columnas = letras.slice(0, 7);
-  let contenedorActual = null;
+const tituloPagina = document.title.trim().toLowerCase();
 
-  function generarLayout() {
-    layoutGrid.innerHTML = "";
-    layoutGrid.style.gridTemplateColumns = `repeat(${columnas.length + 1}, 1fr)`;
-    layoutGrid.appendChild(document.createElement("div"));
-    columnas.forEach((letra, i) => {
-      const header = document.createElement("div");
-      header.className = "layout-col-label";
-      header.textContent = letra;
-      header.style.gridColumn = i + 2;
-      layoutGrid.appendChild(header);
-    });
-    for (let fila = 7; fila >= 1; fila--) {
-      const filaLabel = document.createElement("div");
-      filaLabel.className = "layout-row-label";
-      filaLabel.textContent = `${String(fila).padStart(2, "0")}-`;
-      layoutGrid.appendChild(filaLabel);
-      for (let i = 0; i < columnas.length; i++) {
-        const cell = document.createElement("div");
-        cell.className = "layout-cell";
-        layoutGrid.appendChild(cell);
+let zona = (() => {
+  if (tituloPagina.includes("zona normal")) return "contenedores";
+  if (tituloPagina.includes("zona peligrosa")) return "peligroso";
+  if (tituloPagina.includes("zona refrigeracion")) return "refrigeracion";
+  if (tituloPagina.includes("zona vacio")) return "vacio";
+  return "contenedores";
+})();
+
+const modalAgregar = document.getElementById("modal-agregar");
+const modalInfo = document.getElementById("modal-info");
+const abrirModalBtn = document.getElementById("abrir-formulario");
+const layoutGrid = document.getElementById("layoutGrid");
+const btnPaginaAnterior = document.getElementById("prev-page");
+const btnPaginaSiguiente = document.getElementById("next-page");
+
+const columnasBase = ["A", "B", "C", "D", "E", "F", "G"];
+let paginaActual = 0;
+let contenedores = [];
+let paginas = [];
+let contenedorEnEdicion = null;
+
+abrirModalBtn.addEventListener("click", () => {
+  contenedorEnEdicion = null;
+  document.getElementById("modal-titulo").innerText = "Agregar Contenedor";
+  document.getElementById("formulario-agregar").reset();
+  document.getElementById("fecha-llegada").value = new Date().toISOString().split("T")[0];
+  modalAgregar.style.display = "flex";
+});
+
+window.addEventListener("click", e => {
+  if (e.target === modalAgregar) modalAgregar.style.display = "none";
+  if (e.target === modalInfo) modalInfo.style.display = "none";
+});
+
+document.getElementById("guardar-contenedor").addEventListener("click", async function () {
+  const datos = {
+    numero: document.getElementById("numero-contenedor").value,
+    tamano: document.getElementById("tamano-contenedor").value,
+    peso: document.getElementById("peso").value,
+    descripcion: document.getElementById("descripcion-mercancia").value,
+    zona: zona.charAt(0).toUpperCase() + zona.slice(1),
+    fecha_llegada: document.getElementById("fecha-llegada").value,
+    fecha_salida: document.getElementById("fecha-salida").value,
+    tipo: zona.charAt(0).toUpperCase() + zona.slice(1),
+    grupo: parseInt(document.getElementById("grupo")?.value) || 1,
+    tabla: zona
+  };
+
+  const url = contenedorEnEdicion
+    ? `http://localhost:3000/api/contenedores/${contenedorEnEdicion.id}`
+    : "http://localhost:3000/api/contenedores";
+
+  const method = contenedorEnEdicion ? "PUT" : "POST";
+
+  const respuesta = await fetch(url, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datos)
+  });
+
+  const resultado = await respuesta.json();
+  if (resultado.message) {
+    modalAgregar.style.display = "none";
+    modalInfo.style.display = "none";
+    await cargarContenedores();
+    alert(resultado.message);
+  } else {
+    alert("Error: " + resultado.error);
+  }
+});
+
+async function cargarContenedores() {
+  const res = await fetch(`http://localhost:3000/api/contenedores?tabla=${zona}`);
+  const todos = await res.json();
+  contenedores = todos;
+  organizarPaginas();
+  renderizarPagina();
+}
+
+function organizarPaginas() {
+  paginas = [
+    columnasBase,
+    columnasBase.map(l => l + "2"),
+    columnasBase.map(l => l + "3"),
+    columnasBase.map(l => l + "4")
+  ];
+}
+
+function renderizarPagina() {
+  layoutGrid.innerHTML = "";
+
+  const columnas = paginas[paginaActual] || columnasBase;
+
+  const header = document.createElement("div");
+  header.classList.add("layout-row");
+  const emptyHeader = document.createElement("div");
+  emptyHeader.classList.add("layout-row-label");
+  header.appendChild(emptyHeader);
+
+  for (let col of columnas) {
+    const colLabel = document.createElement("div");
+    colLabel.classList.add("layout-cell");
+    colLabel.textContent = col;
+    header.appendChild(colLabel);
+  }
+
+  layoutGrid.appendChild(header);
+
+  for (let fila = 7; fila >= 1; fila--) {
+    const row = document.createElement("div");
+    row.classList.add("layout-row");
+
+    const label = document.createElement("div");
+    label.classList.add("layout-row-label");
+    label.textContent = `${String(fila).padStart(2, "0")}-`;
+    row.appendChild(label);
+
+    for (let col of columnas) {
+      const cell = document.createElement("div");
+      cell.classList.add("layout-cell");
+      const codigo = col + String(fila).padStart(2, "0");
+      const conts = contenedores.filter(c => c.codigo === codigo);
+
+      if (conts.length === 1 && conts[0].tamano === "40") {
+        const cont = conts[0];
+        cell.innerHTML = `<div>${cont.numero}</div>`;
+        cell.style.backgroundColor = getColorPorFecha(cont.fecha_salida);
+        cell.addEventListener("click", () => mostrarModalInfo(cont));
       }
-    }
-  }
 
-  abrirModalBtn.addEventListener("click", () => {
-    contenedorActual = null;
-    document.getElementById("formulario-agregar").reset();
-    modalAgregar.style.display = "flex";
-  });
-
-  window.addEventListener("click", e => {
-    if (e.target === modalAgregar) modalAgregar.style.display = "none";
-    if (e.target === modalInfo) modalInfo.style.display = "none";
-  });
-
-  document.getElementById("close-agregar").onclick = () => modalAgregar.style.display = "none";
-  document.getElementById("close-info").onclick = () => modalInfo.style.display = "none";
-
-  await cargarYRenderizar();
-
-  document.getElementById("guardar-contenedor").addEventListener("click", async () => {
-    const numero = document.getElementById("numero-contenedor").value.trim();
-    const tamano = document.getElementById("tamano-contenedor").value.trim();
-    const peso = document.getElementById("peso").value.trim();
-    const descripcion = document.getElementById("descripcion-mercancia").value.trim();
-    const llegada = document.getElementById("fecha-llegada").value;
-    const salida = document.getElementById("fecha-salida").value;
-    const zona = obtenerZonaDesdeHTML();
-    const tipo = zona;
-
-    if (!numero || !tamano || !peso || !descripcion || !llegada || !salida) {
-      return alert("Todos los campos son obligatorios.");
-    }
-
-    const diasEstadia = Math.ceil((new Date(salida) - new Date(llegada)) / (1000 * 60 * 60 * 24));
-    const columnaLetra = obtenerColumnaPorDias(diasEstadia);
-
-    if (!columnaLetra) {
-      return alert(`⛔ No se puede asignar contenedor con estancia de ${diasEstadia} días. Solo se permite de 1 a 27 días.`);
-    }
-
-    const codigo = await buscarCodigoVertical(columnaLetra);
-    if (!codigo) {
-      return alert(`❌ No hay espacio disponible en la columna ${columnaLetra} (estancia de ${diasEstadia} días).`);
-    }
-
-    const res = await fetch("http://localhost:3000/api/contenedores", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        numero, tipo, tamano, peso, descripcion,
-        fecha_llegada: llegada,
-        fecha_salida: salida,
-        zona
-      })
-    });
-
-    const json = await res.json();
-    if (res.ok) {
-      pintarCelda(json.id, json.codigo, json.tipo, json.numero);
-      alert(`✅ Contenedor agregado en ${json.codigo}`);
-      modalAgregar.style.display = "none";
-    } else {
-      alert(json.error || "Error al guardar.");
-    }
-  });
-
-  function obtenerColumnaPorDias(dias) {
-    if (dias >= 1 && dias <= 3) return 'A';
-    if (dias >= 4 && dias <= 7) return 'B';
-    if (dias >= 8 && dias <= 11) return 'C';
-    if (dias >= 12 && dias <= 15) return 'D';
-    if (dias >= 16 && dias <= 19) return 'E';
-    if (dias >= 20 && dias <= 23) return 'F';
-    if (dias >= 24 && dias <= 27) return 'G';
-    return null;
-  }
-
-  async function buscarCodigoVertical(columnaLetra) {
-    const res = await fetch("http://localhost:3000/api/contenedores");
-    const contenedores = await res.json();
-    const ocupados = new Set(contenedores.map(c => c.codigo));
-
-    for (let fila = 1; fila <= 7; fila++) {
-      const codigo = columnaLetra + String(fila).padStart(2, "0");
-      if (!ocupados.has(codigo)) {
-        return codigo;
+      if (conts.length === 1 && conts[0].tamano === "20") {
+        const cont = conts[0];
+        cell.innerHTML = `
+          <div style="height: 50%; display: flex; align-items: center; justify-content: center; border-top: 1px solid #ccc; padding-top: 5px;">
+            ${cont.numero}
+          </div>
+        `;
+        cell.style.backgroundColor = getColorPorFecha(cont.fecha_salida);
+        cell.addEventListener("click", () => mostrarModalInfo(cont));
       }
+
+      if (conts.length === 2 && conts.every(c => c.tamano === "20")) {
+        const divs = conts.map((c, i) => `
+          <div style="height: 50%; display: flex; align-items: center; justify-content: center; border-top: ${i === 1 ? '1px solid #ccc' : 'none'}; padding-top: ${i === 1 ? '5px' : '0'}; padding-bottom: ${i === 0 ? '5px' : '0'};">
+            ${c.numero}
+          </div>
+        `);
+        cell.innerHTML = divs.join("");
+        cell.style.backgroundColor = getColorPorFecha(conts[0].fecha_salida);
+        cell.addEventListener("click", () => mostrarModalInfo(conts[0]));
+      }
+
+      row.appendChild(cell);
     }
-    return null;
+
+    layoutGrid.appendChild(row);
   }
+}
 
-  function obtenerZonaDesdeHTML() {
-    const url = location.pathname.toLowerCase();
-    if (url.includes("normal")) return "Normal";
-    if (url.includes("peligroso")) return "Peligroso";
-    if (url.includes("refrigeracion")) return "Refrigerado";
-    if (url.includes("vacio")) return "Vacío";
-    return "Desconocido";
-  }
+function getColorPorFecha(fechaSalida) {
+  const salida = new Date(fechaSalida);
+  const hoy = new Date();
+  const manana = new Date();
+  manana.setDate(hoy.getDate() + 1);
 
-  function pintarCelda(id, codigo, tipo, numero) {
-    const col = codigo[0];
-    const fil = codigo.slice(1);
-    const colIndex = columnas.indexOf(col);
-    const filIndex = 7 - parseInt(fil, 10);
-    const idx = filIndex * columnas.length + colIndex;
+  if (salida.toDateString() === hoy.toDateString()) return "#cce5ff";
+  if (salida.toDateString() === manana.toDateString()) return "#ffe5b4";
 
-    const celda = document.querySelectorAll(".layout-cell")[idx];
-    if (!celda) return;
+  // Zona personalizada para color
+  if (zona === "peligroso") return "#f8d7da";
+  if (zona === "refrigeracion") return "#d1f7ff";
+  if (zona === "vacio") return "#f0f0f0";
+  return "#d4edda";
+}
 
-    const colores = {
-      normal: "#d4edda",
-      peligroso: "#f8d7da",
-      refrigerado: "#d1ecf1",
-      vacío: "#e2e3e5"
-    };
-
-    celda.style.backgroundColor = colores[tipo.toLowerCase()] || colores.normal;
-    celda.textContent = numero;
-    celda.onclick = () => mostrarInfo(id);
-  }
-
-  async function cargarYRenderizar() {
-    generarLayout();
-    const res = await fetch("http://localhost:3000/api/contenedores");
-    const data = await res.json();
-    data.forEach(c => {
-      pintarCelda(c.id, c.codigo, c.tipo, c.numero);
-    });
-  }
-
-  async function mostrarInfo(id) {
-    const res = await fetch("http://localhost:3000/api/contenedores");
-    const data = await res.json();
-    const c = data.find(x => x.id === id);
-    if (!c) return;
-    contenedorActual = c;
-    document.getElementById("info-contenedor").innerHTML = `
+function mostrarModalInfo(c) {
+  modalInfo.innerHTML = `
+    <div class="modal-contenido">
+      <span class="modal-cerrar" onclick="modalInfo.style.display='none'">&times;</span>
+      <h2>Información del Contenedor</h2>
       <p><strong>Código:</strong> ${c.codigo}</p>
       <p><strong>Número:</strong> ${c.numero}</p>
-      <p><strong>Tipo:</strong> ${c.tipo}</p>
       <p><strong>Tamaño:</strong> ${c.tamano}</p>
       <p><strong>Peso:</strong> ${c.peso}</p>
       <p><strong>Descripción:</strong> ${c.descripcion}</p>
       <p><strong>Llegada:</strong> ${new Date(c.fecha_llegada).toLocaleDateString()}</p>
       <p><strong>Salida:</strong> ${new Date(c.fecha_salida).toLocaleDateString()}</p>
-    `;
-    modalInfo.style.display = "flex";
+      <div style="display:flex; justify-content:center; gap: 10px; margin-top: 20px;">
+        <button onclick="editarContenedor(${c.id})" style="padding:8px 12px; background-color:#ba9d45; color:white; border:none; border-radius:5px;">✏️ Editar</button>
+        <button onclick="eliminarContenedor(${c.id})" style="padding:8px 12px; background-color:#a94442; color:white; border:none; border-radius:5px;">🗑️ Eliminar</button>
+      </div>
+    </div>
+  `;
+  modalInfo.style.display = "flex";
+}
+
+function editarContenedor(id) {
+  const c = contenedores.find(cont => cont.id === id);
+  if (!c) return;
+
+  contenedorEnEdicion = c;
+
+  document.getElementById("modal-titulo").innerText = "Editar Contenedor";
+  document.getElementById("numero-contenedor").value = c.numero;
+  document.getElementById("tamano-contenedor").value = c.tamano;
+  document.getElementById("peso").value = c.peso;
+  document.getElementById("descripcion-mercancia").value = c.descripcion;
+  document.getElementById("fecha-llegada").value = c.fecha_llegada.split("T")[0];
+  document.getElementById("fecha-salida").value = c.fecha_salida.split("T")[0];
+  if (document.getElementById("grupo")) {
+    document.getElementById("grupo").value = c.grupo || 1;
   }
 
-  document.getElementById("editar-btn").onclick = () => {
-    if (!contenedorActual) return;
-    modalInfo.style.display = "none";
-    modalAgregar.style.display = "flex";
-    Object.keys(contenedorActual).forEach(key => {
-      if (["numero", "tamano", "peso", "descripcion", "fecha_llegada", "fecha_salida"].includes(key)) {
-        document.getElementById({
-          numero: "numero-contenedor",
-          tamano: "tamano-contenedor",
-          peso: "peso",
-          descripcion: "descripcion-mercancia",
-          fecha_llegada: "fecha-llegada",
-          fecha_salida: "fecha-salida"
-        }[key]).value = contenedorActual[key];
-      }
-    });
-  };
+  modalAgregar.style.display = "flex";
+}
 
-  document.getElementById("eliminar-btn").onclick = async () => {
-    if (!contenedorActual) return;
-    if (!confirm("Eliminar contenedor?")) return;
-    const res = await fetch(`http://localhost:3000/api/contenedores/${contenedorActual.id}`, { method: "DELETE" });
-    if (res.ok) {
-      alert("Contenedor eliminado");
-      await cargarYRenderizar();
-      modalInfo.style.display = "none";
-    } else {
-      alert("Error al eliminar");
-    }
-  };
+async function eliminarContenedor(id) {
+  if (!confirm("¿Seguro que deseas eliminar este contenedor?")) return;
+  const res = await fetch(`http://localhost:3000/api/contenedores/${id}?tabla=${zona}`, {
+    method: "DELETE"
+  });
+  const data = await res.json();
+  if (data.message) {
+    modalInfo.style.display = "none";
+    await cargarContenedores();
+  }
+}
+
+btnPaginaAnterior?.addEventListener("click", () => {
+  if (paginaActual > 0) {
+    paginaActual--;
+    renderizarPagina();
+  }
 });
+
+btnPaginaSiguiente?.addEventListener("click", () => {
+  if (paginaActual < paginas.length - 1) {
+    paginaActual++;
+    renderizarPagina();
+  }
+});
+
+window.addEventListener("DOMContentLoaded", cargarContenedores);

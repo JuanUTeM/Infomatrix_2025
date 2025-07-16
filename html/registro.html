@@ -1,41 +1,41 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro</title>
-    <link rel="stylesheet" href="../frontend/css/login.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registro</title>
+  <link rel="stylesheet" href="../frontend/css/login.css" />
 </head>
 <body>
-    <div class="login-container">
-        <h2>Crear una Cuenta</h2>
-        <form id="formulario-registro">
-            <div class="form-group">
-                <label for="nombres-registro">Nombres:</label>
-                <input type="text" id="nombres-registro" name="nombres-registro" placeholder="Ingresa tus nombres" required>
-            </div>
+  <div class="login-container">
+    <h2>Crear una Cuenta</h2>
+    <form id="formulario-registro">
+      <div class="form-group">
+        <label for="nombres-registro">Nombres:</label>
+        <input type="text" id="nombres-registro" name="nombres-registro" required />
+      </div>
 
-            <div class="form-group">
-                <label for="apellidos-registro">Apellidos:</label>
-                <input type="text" id="apellidos-registro" name="apellidos-registro" placeholder="Ingresa tus apellidos" required>
-            </div>
+      <div class="form-group">
+        <label for="apellidos-registro">Apellidos:</label>
+        <input type="text" id="apellidos-registro" name="apellidos-registro" required />
+      </div>
 
-            <div class="form-group">
-                <label for="usuario-registro">Usuario:</label>
-                <input type="text" id="usuario-registro" name="usuario-registro" placeholder="Elige un usuario" required>
-            </div>
+      <div class="form-group">
+        <label for="usuario-registro">Nombre del Usuario:</label>
+        <input type="text" id="usuario-registro" name="usuario-registro" required />
+      </div>
 
-            <div class="form-group">
-                <label for="contraseña-registro">Contraseña:</label>
-                <input type="password" id="contraseña-registro" name="contraseña-registro" placeholder="Ingresa tu contraseña" required>
-            </div>
+      <div class="form-group">
+        <label for="contraseña-registro">Contraseña:</label>
+        <input type="password" id="contraseña-registro" name="contraseña-registro" required />
+      </div>
 
-            <button type="submit" class="btn-login">Registrarse</button>
-        </form>
+      <button type="submit" class="btn-login">Registrarse</button>
+    </form>
 
-        <p>¿Ya tienes una cuenta? <a href="./login.html">Inicia sesión aquí</a></p>
-    </div>
+    <p>¿Ya tienes una cuenta? <a href="login.html">Inicia sesión aquí</a></p>
+  </div>
 
-    <script src="../js/registro.js"></script>
+  <script src="../js/registro.js"></script>
 </body>
 </html>
